@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
-import argparse
 import time
+
+el_perf = {}
+el_perf["start_begin"] = time.time()
+
+import argparse
 import sys
 from sys import exit
 from Emulator import Emulator
@@ -220,6 +224,8 @@ def main(args, maxnbplayers):
         return start_rom(args, maxnbplayers, args.rom, args.rom)
 
 def start_rom(args, maxnbplayers, rom, romConfiguration):
+    global el_perf
+
     # controllers
     playersControllers = dict()
 
@@ -368,7 +374,9 @@ def start_rom(args, maxnbplayers, rom, romConfiguration):
                     if generators[system.config['emulator']].hasInternalMangoHUDCall() == False:
                         cmd.array.insert(0, "mangohud")
 
+            el_perf["start_end"] = time.time()
             exitCode = runCommand(cmd)
+            el_perf["stop_begin"] = time.time()
         finally:
             Evmapy.stop()
 
@@ -653,6 +661,8 @@ if __name__ == '__main__':
         eslog.error("configgen exception: ", exc_info=True)
     time.sleep(1) # this seems to be required so that the gpu memory is restituated and available for es
     eslog.debug("Exiting configgen with status {}".format(str(exitcode)))
+    el_perf["stop_end"] = time.time()
+    eslog.debug("start time: {} ; stop time: {}".format(round(el_perf["start_end"] - el_perf["start_begin"], 2), round(el_perf["stop_end"] - el_perf["stop_begin"], 2)))
     exit(exitcode)
 
 # Local Variables:
